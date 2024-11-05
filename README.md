@@ -72,7 +72,7 @@ ORDER BY volume desc limit 2;
 ```
 
 2. **Identify Which Day of the Week Has the Highest and Lowest Trading Volume**:
-```sql
+   ```sql
 --week does trading volume tend to be the highest
 SELECT dayname(date) as Day_Name, 
 avg(volume) as Avg_Volume
