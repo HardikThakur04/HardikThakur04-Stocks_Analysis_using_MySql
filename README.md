@@ -1,177 +1,159 @@
-# Retail Sales Analysis SQL Project
+# Stocks Analysis Using MySQL
 
 ## Project Overview
 
-**Project Title**: Retail Sales Analysis  
-**Level**: Beginner  
-**Database**: `p1_retail_db`
+**Project Title**: Stocks Analysis  
+**Level**: Intermediate  
+**Database**: `mysql_project`
 
-This project is designed to demonstrate SQL skills and techniques typically used by data analysts to explore, clean, and analyze retail sales data. The project involves setting up a retail sales database, performing exploratory data analysis (EDA), and answering specific business questions through SQL queries. This project is ideal for those who are starting their journey in data analysis and want to build a solid foundation in SQL.
+This project demonstrates SQL skills and techniques for exploring, analyzing, and gaining insights from historical stock market data. Using MySQL, this analysis includes setting up a stocks database, performing exploratory data analysis (EDA), and answering key business questions through SQL queries. This project is ideal for data enthusiasts aiming to build strong SQL skills through practical financial data analysis.
 
 ## Objectives
 
-1.Database Setup: Created and populated a retail sales database using the provided data.
-2.Data Cleaning: Identified and removed records with missing or null values to ensure data quality.
-3.Exploratory Data Analysis (EDA): Conducted initial data exploration to uncover key patterns and trends.
-4.Business Insights: Leveraged SQL queries to answer business-specific questions and generate actionable insights from the sales data.
+1. **Database Setup**: Created and populated a stock market database using historical S&P 500 data.
+2. **Data Cleaning**: Identified and removed records with missing or null values to ensure data accuracy.
+3. **Exploratory Data Analysis (EDA)**: Conducted initial data exploration to uncover trading patterns and stock performance insights.
+4. **Business Insights**: Leveraged SQL queries to answer business-specific questions and generate actionable insights about trading volume, stock volatility, and historical returns.
 
 ## Project Structure
 
 ### 1. Database Setup
 
-- **Database Creation**: The project starts by creating a database named `mysql_project`.
-- **Table Creation**: A table named `retail_sales` is created to store the sales data. The table structure includes columns for transaction ID, sale date, sale time, customer ID, gender, age, product category, quantity sold, price per unit, cost of goods sold (COGS), and total sale amount.
+- **Database Creation**: The project starts by creating a database named `stocks_db`.
+- **Table Creation**: A table named `stocks` is created to store daily trading data for S&P 500 companies. The table structure includes columns for ticker, trade date, volume, high, low, open, and close prices.
 
 ```sql
-CREATE DATABASE retail_sales;
+CREATE DATABASE stocks_db;
 
-CREATE TABLE retail_sales
-(
-    transactions_id INT PRIMARY KEY,
-    sale_date DATE,	
-    sale_time TIME,
-    customer_id INT,	
-    gender VARCHAR(10),
-    age INT,
-    category VARCHAR(35),
-    quantity INT,
-    price_per_unit FLOAT,	
-    cogs FLOAT,
-    total_sale FLOAT
+CREATE TABLE stocks (
+    symbol VARCHAR(10),
+    date DATE,
+    volume BIGINT,
+    high FLOAT,
+    low FLOAT,
+    open FLOAT,
+    close FLOAT,
+    PRIMARY KEY symbol
 );
 ```
 
 ### 2. Data Exploration & Cleaning
 
 - **Record Count**: Determine the total number of records in the dataset.
-- **Customer Count**: Find out how many unique customers are in the dataset.
-- **Category Count**: Identify all unique product categories in the dataset.
-- **Null Value Check**: Check for any null values in the dataset and delete records with missing data.
+- **Unique Tickers**: Find out how many unique stocks (tickers) are included.
+- **Null Value Check**: Check for null values in the dataset and delete records with missing data to maintain quality.
 
 ```sql
-SELECT COUNT(*) FROM retail_sales;
-SELECT COUNT(DISTINCT customer_id) FROM retail_sales;
-SELECT DISTINCT category FROM retail_sales;
+SELECT COUNT(*) FROM stocks;
+SELECT COUNT(DISTINCT ticker) FROM stocks;
 
-SELECT * FROM retail_sales
-WHERE 
-    sale_date IS NULL OR sale_time IS NULL OR customer_id IS NULL OR 
-    gender IS NULL OR age IS NULL OR category IS NULL OR 
-    quantity IS NULL OR price_per_unit IS NULL OR cogs IS NULL;
+SELECT * FROM stocks
+WHERE volume IS NULL OR high IS NULL OR low IS NULL OR open IS NULL OR close IS NULL;
 
-DELETE FROM retail_sales
-WHERE 
-    sale_date IS NULL OR sale_time IS NULL OR customer_id IS NULL OR 
-    gender IS NULL OR age IS NULL OR category IS NULL OR 
-    quantity IS NULL OR price_per_unit IS NULL OR cogs IS NULL;
+DELETE FROM stocks
+WHERE volume IS NULL OR high IS NULL OR low IS NULL OR open IS NULL OR close IS NULL;
 ```
 
 ### 3. Data Analysis & Findings
 
-The following SQL queries were developed to answer specific business questions:
+1. **Which date saw the largest total trading volume across all S&P 500 companies, and which two stocks had the highest individual volumes on that day?**:
+   ```sql
+-- Find the date with the highest total trading volume
+SELECT date, sum(volume) as Total_Volume
+FROM stocks
+GROUP BY date
+ORDER BY SUM(volume) desc LIMIT 1;
 
-1. **Write a SQL query to retrieve all columns for sales made on '2022-11-05**:
-```sql
-select * from retail_sales 
-where sale_date='2022-11-05';
+-- Find the two stocks with the highest volumes on that date
+SELECT symbol,volume
+FROM stocks
+WHERE date = '2015-08-24'
+ORDER BY volume desc limit 2;
 ```
 
-2. **Write a SQL query to retrieve all transactions where the category is 'Clothing' and the quantity sold is more than 4 in the month of Nov-2022**:
+2. **Identify Which Day of the Week Has the Highest and Lowest Trading Volume**:
 ```sql
-select * from retail_sales 
-where category= 'Clothing' and quantiy>3 and  year(sale_date)=2022 and month(sale_date)=11;
+--week does trading volume tend to be the highest
+SELECT dayname(date) as Day_Name, 
+avg(volume) as Avg_Volume
+FROM stocks
+GROUP BY dayname(date)
+ORDER BY avg(volume) desc limit 1;
+
+--week does trading volume tend to be the lowest
+SELECT dayname(date) as Day_Name, 
+avg(volume) as Avg_Volume
+FROM stocks
+GROUP BY dayname(date)
+ORDER BY avg(volume) asc limit 1;
 ```
 
-3. **Write a SQL query to calculate the total sales (total_sale) for each category.**:
+3. **Identify Which Day of the Week Has the Highest and Lowest Trading Volume**:
 ```sql
-select category,
-sum(total_sale) as Total_Sales_By_Category,
-count(*) as total_orders 
-from retail_sales 
-group by category;
+   SELECT DAYNAME(trade_date) AS day_of_week, AVG(volume) AS avg_volume
+   FROM stocks
+   GROUP BY day_of_week
+   ORDER BY avg_volume DESC;
 ```
 
-4. **Write a SQL query to find the average age of customers who purchased items from the 'Beauty' category.**:
-```sql
-select category, 
-avg(age) as Avg_age_Custm_used_Beauty 
-from retail_sales 
-where category="beauty";
-```
+4. **Find the Day with the Highest Volatility for Amazon (AMZN)**:
+   ```sql
+   SELECT trade_date, (high - low) AS volatility
+   FROM stocks
+   WHERE ticker = 'AMZN'
+   ORDER BY volatility DESC
+   LIMIT 1;
+   ```
 
-5. **Write a SQL query to find all transactions where the total_sale is greater than 1000.**:
-```sql
-select * from retail_sales 
-where total_sale>1000;
-```
+5. **Calculate the Stock with the Highest Percentage Gain from 2014 to 2017**:
+   ```sql
+   WITH price_changes AS (
+       SELECT ticker,
+              MAX(CASE WHEN trade_date = '2014-01-02' THEN open END) AS open_price,
+              MAX(CASE WHEN trade_date = '2017-12-29' THEN close END) AS close_price
+       FROM stocks
+       GROUP BY ticker
+   )
+   SELECT ticker, ((close_price - open_price) / open_price) * 100 AS percentage_gain
+   FROM price_changes
+   ORDER BY percentage_gain DESC
+   LIMIT 1;
+   ```
 
-6. **Write a SQL query to find the total number of transactions (transaction_id) made by each gender in each category.**:
-```sql
-select category,
-gender,
-count(transactions_id) as Total_tans_by_Gender 
-from retail_sales 
-group by gender,category 
-order by count(transactions_id) desc;
-```
+6. **Identify the Five Most Volatile Stocks by Average Daily Volatility**:
+   ```sql
+   SELECT ticker, AVG(high - low) AS avg_volatility
+   FROM stocks
+   GROUP BY ticker
+   ORDER BY avg_volatility DESC
+   LIMIT 5;
+   ```
 
-7. **Write a SQL query to calculate the average sale for each month. Find out best selling month in each year**:
-```sql
-select year(sale_date),
-monthname(sale_date) as Month_Name, 
-avg(total_sale) as Avg_sales from retail_sales 
-group by sale_date
-order by year(sale_date), avg(total_sale) desc;
-```
-
-8. **Write a SQL query to find the top 5 customers based on the highest total sales **:
-```sql
-select customer_id,
-sum(total_sale) as Total_Sales 
-from retail_sales 
-group by customer_id 
-order by sum(total_sale) desc limit 5;
-```
-
-9. **Write a SQL query to find the number of unique customers who purchased items from each category.**:
-```sql
-select category,
-count(distinct(customer_id)) as Count_Unique_Custm 
-from retail_sales 
-group by category;
-```
-
-10. **Write a SQL query to create each shift and number of orders (Example Morning <12, Afternoon Between 12 & 17, Evening >17)**:
-```sql
-with hourly_sales  as
-(
-select *,
-case 
-    when hour(sale_time)<=12 then "Morning"
-    when (hour(sale_time)) between 12 and 17 then "Afternoon"
-    else "Evening"
-end as shift 
-from retail_sales
-)
-select shift,count(*) from hourly_sales group by shift;
-```
+7. **Calculate Monthly Trading Volume Patterns**:
+   ```sql
+   SELECT MONTHNAME(trade_date) AS month, AVG(volume) AS avg_volume
+   FROM stocks
+   GROUP BY month
+   ORDER BY avg_volume DESC;
+   ```
 
 ## Findings
 
-- **Customer Demographics**: The dataset includes customers from various age groups, with sales distributed across different categories such as Clothing and Beauty.
-- **High-Value Transactions**: Several transactions had a total sale amount greater than 1000, indicating premium purchases.
-- **Sales Trends**: Monthly analysis shows variations in sales, helping identify peak seasons.
-- **Customer Insights**: The analysis identifies the top-spending customers and the most popular product categories.
+- **Highest Trading Volume Date**: Identified the day with the largest trading volume and the top two traded stocks.
+- **Weekly Volume Patterns**: Determined which day of the week generally has the highest and lowest trading volume.
+- **Amazon's Volatility**: Found the date of highest volatility for Amazon (AMZN), indicating significant price fluctuation.
+- **Top Investment Opportunity**: Analyzed the stock with the highest percentage gain from 2014 to 2017, useful for retrospective investment insights.
+- **Stock Volatility**: Identified the most volatile stocks over the given period, providing insights into risk levels.
 
 ## Reports
 
-- **Sales Summary**: A detailed report summarizing total sales, customer demographics, and category performance.
-- **Trend Analysis**: Insights into sales trends across different months and shifts.
-- **Customer Insights**: Reports on top customers and unique customer counts per category.
+- **Trading Volume Summary**: Reports on highest-volume days, day-of-week patterns, and month-wise trends.
+- **Stock Performance**: Analysis of stocks with the highest historical returns and volatility.
+- **Investment Insights**: A summary of stocks with potential for gains based on historical performance.
 
 ## Conclusion
 
-This project serves as a comprehensive introduction to SQL for data analysts, covering database setup, data cleaning, exploratory data analysis, and business-driven SQL queries. The findings from this project can help drive business decisions by understanding sales patterns, customer behavior, and product performance.
+This project serves as a comprehensive exploration of stock market data using SQL, covering database setup, data cleaning, exploratory analysis, and advanced business queries. The insights generated from this project can support investment strategies and provide valuable trading insights based on historical data.
 
-Analyzed by: Hardik Thakur
-Date: 17, September 2024
+Analyzed by: Hardik Thakur  
+Date: 5, November 2024
