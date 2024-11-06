@@ -54,6 +54,10 @@ DELETE FROM stocks
 WHERE volume IS NULL OR high IS NULL OR low IS NULL OR open IS NULL OR close IS NULL;
 ```
 
+Weekly Stock Performance Patterns
+
+Question: "Are there any patterns in daily closing prices based on the day of the week? For example, does any specific day of the week tend to have higher or lower closing prices on average?"
+
 ### 3. Data Analysis & Findings
 
 1. **Which date saw the largest total trading volume across all S&P 500 companies, and which two stocks had the highest individual volumes on that day?**:
